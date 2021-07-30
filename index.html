@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>api test</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="wrap">
+        <div class="container">
+            <div class="header">
+                <p class="header__title">Search Books!</p>
+            </div>
+            <div class="search">
+                <div class="search__text">
+                    <input type="text" id="js-search-word" class="search__text__input" value="" placeholder="検索する">
+                </div>
+                <button id="js-search-button" class="search__btn">検索する</button>
+            </div>
+            <ul class="lists">
+
+            </ul>
+        </div>
+    </div>
+    <script src="js/jquery.js"></script>
+    <script type="text/javascript">
+    // 楽天ブックスの総合検索APIを使って製作してください。
+    // answerの挙動を良く見てね！
+    $(function(){
+      var lists = $(".lists"); //.listsを省略
+      $("#js-search-button").on("click",function(){//検索ボタンをクリックしたらイベントスタート
+        var title = $("#js-search-word").val();//inputの値を格納
+        $.get('https://app.rakuten.co.jp/services/api/BooksBook/Search/20170404?',{//getメソッドでアドレスを指定し楽天サーバーと接続
+          applicationId: "1092759197387832291",//取得したアプリケーションidを設定
+          title: title,//検索したいワードにinputの値を指定
+          hits: 20,//検索結果の20件まで取得
+          page: 1 //検索結果の1ページまで取得
+          //↑サーバーに送りたいデータをJSON形式で指定
+        },function(data){//引数に検索結果のJSONデータが送られる
+          if(data==0){//検索結果が0件の処理
+            var message = '<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
+            lists.before(message);
+          }
+          if(data.count > 0){//検索結果が１件以上ある時の処理
+            lists.empty();//前の検索結果と重複表示されるのを防ぐためulを空にする
+            $.each(data.Items,function(i,item){//eachメソッドで配列を展開する
+              var temp = `<li class="lists__item"><div class="lists__item__inner"><a href="${item.Item.itemUrl}" class="lists__item__link" target="_blank"><img src="${item.Item.largeImageUrl}" class="lists__item__img" alt="${item.Item.title}"><p class="lists__item__detail">作品名： ${item.Item.title}</p><p class="lists__item__detail">作者： ${item.Item.author}</p><p class="lists__item__detail">出版社： ${item.Item.publisherName}</p></a></div></li>`;
+              lists.append(temp);//ul内にliをappend
+            });
+          }
+        });
+      })
+    })
+    </script>
+
+</body>
+</html>
