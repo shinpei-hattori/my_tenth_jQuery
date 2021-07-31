@@ -30,25 +30,53 @@
     // 楽天ブックスの総合検索APIを使って製作してください。
     // answerの挙動を良く見てね！
     $(function(){
-      var lists = $(".lists"); //.listsを省略
+      var lists = $(".lists"),//.listsを省略
+          count = 1,//ページ数。同じワードで検索するごとにプラスされていく
+          title = "",//検索ワード
+          beforeTitle = "",//前回の検索ワード。次の検索ワード比較するのに使用。
+          beforePage = 0; //前回の検索結果の総ページ数。count++をするのか判別するために使用。
       $("#js-search-button").on("click",function(){//検索ボタンをクリックしたらイベントスタート
-        var title = $("#js-search-word").val();//inputの値を格納
+        if(beforeTitle == $("#js-search-word").val() && beforePage >= count) {//前回の検索ワードと比較して、同じワードであり,
+          //countが総ページ数以下であれば
+          //countをプラスする。
+          count++;
+        }
+        if(beforeTitle == $("#js-search-word").val() && beforePage < count){//前回の検索ワードと同じであり、countが総ページ数を超えた場合の処理
+          if(!($(".message").size())){//messageクラスがなかれば
+            var message = '<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
+            lists.before(message);//↑メッセージを表示
+          }
+          console.log("きちゃった。。。");
+        } else if (beforeTitle != $("#js-search-word").val()){//前回と別の検索ワードの場合。
+          if($(".message").size()){//メッセージがあれば削除
+            $(".message").remove();
+          }
+          count = 1;//countを１にする
+        }
+        // console.log(count);
+        title = $("#js-search-word").val();//inputの値を格納
         $.get('https://app.rakuten.co.jp/services/api/BooksBook/Search/20170404?',{//getメソッドでアドレスを指定し楽天サーバーと接続
           applicationId: "1092759197387832291",//取得したアプリケーションidを設定
           title: title,//検索したいワードにinputの値を指定
           hits: 20,//検索結果の20件まで取得
-          page: 1 //検索結果の1ページまで取得
+          page: count //検索結果の1ページまで取得
           //↑サーバーに送りたいデータをJSON形式で指定
         },function(data){//引数に検索結果のJSONデータが送られる
-          if(data==0){//検索結果が0件の処理
-            var message = '<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
-            lists.before(message);
+          console.log(data.pageCount);
+          if(data.count==0 && !($(".message").size())){//検索結果が0件でメッセージがなければ
+            var message = '<div class="message">ねーよ検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
+            lists.before(message);//メッセージを表示
           }
+
           if(data.count > 0){//検索結果が１件以上ある時の処理
-            lists.empty();//前の検索結果と重複表示されるのを防ぐためulを空にする
+            beforePage = data.pageCount;//総ページ数を格納
+            beforeTitle = title;//検索ワードを格納
+            if(count == 1){
+              lists.empty();//countが1であれば、前の検索結果と重複表示されるのを防ぐためulを空にする
+            }
             $.each(data.Items,function(i,item){//eachメソッドで配列を展開する
               var temp = `<li class="lists__item"><div class="lists__item__inner"><a href="${item.Item.itemUrl}" class="lists__item__link" target="_blank"><img src="${item.Item.largeImageUrl}" class="lists__item__img" alt="${item.Item.title}"><p class="lists__item__detail">作品名： ${item.Item.title}</p><p class="lists__item__detail">作者： ${item.Item.author}</p><p class="lists__item__detail">出版社： ${item.Item.publisherName}</p></a></div></li>`;
-              lists.append(temp);//ul内にliをappend
+              lists.prepend(temp);//ul内にliをappend
             });
           }
         });
