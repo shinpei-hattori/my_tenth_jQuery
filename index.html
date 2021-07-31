@@ -46,7 +46,6 @@
             var message = '<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
             lists.before(message);//↑メッセージを表示
           }
-          console.log("きちゃった。。。");
         } else if (beforeTitle != $("#js-search-word").val()){//前回と別の検索ワードの場合。
           if($(".message").size()){//メッセージがあれば削除
             $(".message").remove();
@@ -64,7 +63,7 @@
         },function(data){//引数に検索結果のJSONデータが送られる
           console.log(data.pageCount);
           if(data.count==0 && !($(".message").size())){//検索結果が0件でメッセージがなければ
-            var message = '<div class="message">ねーよ検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
+            var message = '<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</div>';
             lists.before(message);//メッセージを表示
           }
 
